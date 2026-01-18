@@ -1,0 +1,49 @@
+api:
+  base_url: "https://semantic-brandea-banao-dc049ed0.koyeb.app"
+  endpoints:
+    register: "/register"
+    login: "/login"
+    virtualservice: "/api/virtualservice"
+  timeout: 10
+
+auth:
+  username: "adhyan"
+  password: "adhyan_2025"
+
+# Define the execution workflow dynamically
+workflow:
+  - stage: "Pre-Fetcher"
+    description: "Fetch all tenants, virtual services, and service engines"
+    steps:
+      - action: "fetch_all"
+        resource: "virtualservice"
+
+  - stage: "Pre-Validation"
+    description: "Validate target VS is enabled"
+    steps:
+      - action: "validate_attribute"
+        resource: "virtualservice"
+        identifier_key: "name"
+        identifier_value: "backend-vs-t1r_1000-1"
+        attribute: "enabled"
+        expected_value: true
+
+  - stage: "Task / Trigger"
+    description: "Disable the Virtual Service"
+    steps:
+      - action: "update_resource"
+        resource: "virtualservice"
+        identifier_key: "name"
+        identifier_value: "backend-vs-t1r_1000-1"
+        payload:
+          enabled: false
+
+  - stage: "Post-Validation"
+    description: "Verify the Virtual Service is disabled"
+    steps:
+      - action: "validate_attribute"
+        resource: "virtualservice"
+        identifier_key: "name"
+        identifier_value: "backend-vs-t1r_1000-1"
+        attribute: "enabled"
+        expected_value: false
